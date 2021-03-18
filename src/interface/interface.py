@@ -131,6 +131,10 @@ class Interface(BasicInterface):
 
         self.center()
 
+        # In the widget grid root, set the column/row number N so that the options provided have the values shown (see below).
+        # weight => To make a row (or column) stretchy when resizing, use this option by providing a value that gives the relative weight 
+        # of that row (or column) when distributing the extra space
+
         self.root.columnconfigure(0, weight=0) # Line numbers
         self.root.columnconfigure(1, weight=2) # Text and console
         self.root.columnconfigure(2, weight=0) # Vertical dragbar

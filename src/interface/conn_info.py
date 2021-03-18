@@ -15,12 +15,15 @@ class ConnectionInput:
     def __init__(self, client, get_info=True, **kwargs):
 
         self.client  = client
+        print(get_info)
         self.using_gui_input = get_info
         self.options = kwargs
 
         # If there is all the info, go straight to main interface
 
         if self.using_gui_input:
+
+            # Opens a window to ask the user for information (Host, Port, Name, Password, Language)
 
             self.root=Window.root
 
