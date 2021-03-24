@@ -142,7 +142,9 @@ class Interface(BasicInterface):
 
         self.root.rowconfigure(0, weight=1) # Textbox
         self.root.rowconfigure(1, weight=0) # Dragbar
-        self.root.rowconfigure(2, weight=0) # Console
+        self.root.rowconfigure(2, weight=1) # Raspberry
+        self.root.rowconfigure(3, weight=0) # Dragbar
+        self.root.rowconfigure(4, weight=1) # Console and Graph
 
         self.root.protocol("WM_DELETE_WINDOW", self.client.kill )
 
@@ -186,29 +188,48 @@ class Interface(BasicInterface):
         self.line_numbers.grid(row=0, column=0, sticky='nsew')
 
         # Drag is a small line that changes the size of the console
+        # Dragbar between the textBox and the rasp interface
         self.drag = Dragbar( self, bg="white", height=2  )
         self.drag.grid(row=1, column=0, stick="nsew", columnspan=4)
+
+        # Rasp Interface
+        self.r_scroll = Scrollbar(self.root)
+        self.r_scroll.grid(row=2, column=4, sticky='nsew')
+
+        self.rasp = Canvas(self.root, bg=COLOURS["Stats"], width=350, bd=0, highlightthickness=0)
+        self.rasp.grid(row=2, column=1, sticky="nsew")  
+
+        #self.rasp = ThreadSafeText(self, bg=COLOURS["Background"], fg="white", insertbackground=COLOURS["Background"],
+        #                            height=15, bd=0, highlightthickness=0, yscrollcommand=self.r_scroll.set)
+
+        #self.rasp.grid(row=2, column=0, columnspan=2, stick="nsew")
+
+        self.r_scroll.config(command=self.rasp.yview)
+
+        # Drag between the rasp Interface and the console
+        self.drag2 = Dragbar( self, bg="white", height=2  )
+        self.drag2.grid(row=3, column=0, stick="nsew", columnspan=4)
 
         # Console Box
 
         self.c_scroll = Scrollbar(self.root)
-        self.c_scroll.grid(row=2, column=4, sticky='nsew')
+        self.c_scroll.grid(row=4, column=4, sticky='nsew')
 
         self.console = Console(self.root, bg=COLOURS["Console"], fg="white", height=5, width=50, font="Font",
                             highlightthickness=0, yscrollcommand=self.c_scroll.set)
 
-        self.console.grid(row=2, column=0, columnspan=2, stick="nsew")
+        self.console.grid(row=4, column=0, columnspan=2, stick="nsew")
 
         self.c_scroll.config(command=self.console.yview)
 
         sys.stdout = self.console # routes stdout to print to console
 
         self.console_drag = ConsoleDragbar(self, bg="white", width=2)
-        self.console_drag.grid(row=2, column=2, stick="nsew")
+        self.console_drag.grid(row=4, column=2, stick="nsew")
 
         # Statistics Graphs
         self.graphs = Canvas(self.root, bg=COLOURS["Stats"], width=350, bd=0, highlightthickness=0)
-        self.graphs.grid(row=2, column=3, sticky="nsew")
+        self.graphs.grid(row=4, column=3, sticky="nsew")
 
         # Menubar
 
