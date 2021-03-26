@@ -15,7 +15,6 @@ class ConnectionInput:
     def __init__(self, client, get_info=True, **kwargs):
 
         self.client  = client
-        print(get_info)
         self.using_gui_input = get_info
         self.options = kwargs
 
