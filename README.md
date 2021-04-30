@@ -1,5 +1,7 @@
 # Troop v0.10.3
 
+This ReadMe file is from the Troop project by Qirky. The GitHub link is https://github.com/Qirky/Troop .
+
 ## Real-time collaborative live coding
 
 Troop is a real-time collaborative tool that enables group live coding within the same document across multiple computers. Hypothetically Troop can talk to any interpreter that can take input as a string from the command line but it is already configured to work with live coding languages [FoxDot](https://github.com/Qirky/FoxDot), [TidalCycles](https://tidalcycles.org/), and [SuperCollider](http://supercollider.github.io/). 
