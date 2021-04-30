@@ -1573,6 +1573,5 @@ class Interface(BasicInterface):
 
     def configure_rasp(self):
         """ Opens a popup to configure a new entry of the raspberry"""
-        print("Configuration de la Raspeberry.")
         from .raspberry import Raspberry
         Raspberry(self)

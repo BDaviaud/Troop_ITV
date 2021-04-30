@@ -257,6 +257,7 @@ class Interpreter(DummyInterpreter):
         return [(match.start(), match.end()) for match in cls.comment_regex.finditer(string)]
 
     def write_stdout(self, string):
+        # Writes the line executed in the console 
         if self.is_alive:
             self.lang.stdin.write(self.format(string))
             self.lang.stdin.flush()
@@ -364,6 +365,38 @@ class FoxDotInterpreter(BuiltinInterpreter):
     def stop_sound(cls):
         return "Clock.clear()"
 
+    def evaluate2(self, string):
+        # Envoie la commande
+        self.write_stdout(string)
+        # Retourne la réponse
+        msg = []
+
+        while not msg:
+            msg = self.read_stdout()
+            time.sleep(0.002)
+        
+        return msg
+
+    def read_stdout(self):
+        try:
+            # Check contents of file
+            self.f_out.seek(0)
+
+            message = []
+
+            for stdout_line in iter(self.f_out.readline, ""):
+                line = stdout_line.rstrip()
+                #sys.stdout.write(line)
+                message.append(line)
+
+            # clear tmpfile
+            self.f_out.truncate(0)
+
+            return message
+        except ValueError as e:
+            print(e)
+            return
+        
 class TidalInterpreter(BuiltinInterpreter):
     path = 'ghci'
     filetype = ".tidal"
