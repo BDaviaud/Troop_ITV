@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from ..message import *
 import random
+import re
 from FoxDot import *
 
 try:
@@ -22,13 +23,19 @@ class Raspberry():
         self.root.geometry('350x250')
         self.root.grab_set() # Interaction with main window impossible
 
-        isplaying = self.master.lang.evaluate2("print(Clock.playing)")  
-        print(isplaying)
+        # List of players playing         
+        pattern = re.compile(r'(?<=<)\w+')
+        playing = self.master.lang.evaluate2("print(Clock.playing)")  
+        listPlayer = pattern.findall(playing[0])
+
+        if not listPlayer:
+            listPlayer = ['None']
 
         ## Player Name
-        Label(self.root, text='Enter the player name :').place(x=10, y=10)
-        self.entry_player_name = Entry(self.root)
-        self.entry_player_name.place(x=160, y=10)
+        Label(self.root, text='Chose a player :').place(x=10, y=10)
+        self.ComboPlayername = ttk.Combobox(self.root, values=listPlayer)
+        self.ComboPlayername.current(0)
+        self.ComboPlayername.place(x=160, y=10)
 
         # Param
         Label(self.root, text='Choose a attribute:').place(x=10, y=50)
@@ -59,7 +66,7 @@ class Raspberry():
 
         
     def apply_new_configuration(self):
-        self.player_name = self.entry_player_name.get()
+        self.player_name = self.ComboPlayername.get()
         self.param = self.ComboParam.get()
         self.max = float(self.EntryMaxValue.get())
         self.min = float(self.EntryMinValue.get())
