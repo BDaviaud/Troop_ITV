@@ -25,7 +25,7 @@ class Raspberry():
 
         # List of players playing         
         pattern = re.compile(r'(?<=<)\w+')
-        playing = self.master.lang.evaluate2("print(Clock.playing)")  
+        playing = self.master.lang.evaluate2("print('re', Clock.playing)")
         listPlayer = pattern.findall(playing[0])
 
         if not listPlayer:
@@ -84,13 +84,13 @@ class Raspberry():
     
     def update_player(self):
         # Récupératinon de la variable isplaying du player (La valeur est retournée sous forme d'un tableau de string)
-        commande = 'print(' + self.player_name + '.isplaying)'
+        commande = 'print("re", ' + self.player_name + '.isplaying)'
         isplaying = self.master.lang.evaluate2(commande)
-
+        
         # Nouvelle valeur (random)
         val = int(self.min + random.random() * (self.max - self.min))
 
-        if isplaying[0] == 'False':
+        if isplaying[0] == 're False':
             return
         else:         
             message = self.player_name + "." + self.param + " = " + str(val)

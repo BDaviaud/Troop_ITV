@@ -280,6 +280,7 @@ class Interpreter(DummyInterpreter):
                 self.is_alive = False
                 break
             try:
+                pattern = re.compile("re")
                 # Check contents of file
                 # TODO -- get control of f_out and stdout
                 self.f_out.seek(0)
@@ -287,19 +288,18 @@ class Interpreter(DummyInterpreter):
                 message = []
 
                 for stdout_line in iter(self.f_out.readline, ""):
-
                     line = stdout_line.rstrip()
-                    sys.stdout.write(line)
+                    if not pattern.match(line):
+                        sys.stdout.write(line)
                     message.append(line)
 
                 # clear tmpfile
                 self.f_out.truncate(0)
 
                 # Send console contents to the server
-
                 if len(message) > 0 and self.client.is_master():
-
                     self.client.send(MSG_CONSOLE(self.client.id, "\n".join(message)))
+                    return mess
 
                 time.sleep(0.05)
             except ValueError as e:
@@ -372,30 +372,9 @@ class FoxDotInterpreter(BuiltinInterpreter):
         msg = []
 
         while not msg:
-            msg = self.read_stdout()
-            time.sleep(0.002)
-        
+            msg = self.stdout()
+            time.sleep(0.002)       
         return msg
-
-    def read_stdout(self):
-        try:
-            # Check contents of file
-            self.f_out.seek(0)
-
-            message = []
-
-            for stdout_line in iter(self.f_out.readline, ""):
-                line = stdout_line.rstrip()
-                #sys.stdout.write(line)
-                message.append(line)
-
-            # clear tmpfile
-            self.f_out.truncate(0)
-
-            return message
-        except ValueError as e:
-            print(e)
-            return
         
 class TidalInterpreter(BuiltinInterpreter):
     path = 'ghci'
