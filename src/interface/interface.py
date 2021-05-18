@@ -1575,3 +1575,10 @@ class Interface(BasicInterface):
         """ Opens a popup to configure a new entry of the raspberry"""
         from .raspberry import Raspberry
         Raspberry(self)
+
+    # Raspeberry 
+    # ==========
+
+    def configure_orchestration(self):
+        from .raspberry import Orchestration
+        Orchestration(self)

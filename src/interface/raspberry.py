@@ -12,14 +12,14 @@ except ImportError:
     from tkinter import ttk
 
 """
-Widget that assigns raspberry input.
+Widget for raspberry input.
 """
 
 class Raspberry():
     def __init__(self, master):
         self.master = master
         self.root = Toplevel(master.root) # Popup -> Toplevel()
-        self.root.title('New Player')
+        self.root.title('Rasp Config')
         self.root.geometry('350x250')
         self.root.grab_set() # Interaction with main window impossible
 
@@ -64,7 +64,6 @@ class Raspberry():
 
         btnApply = Button(self.root, text='Apply', command=self.apply_new_configuration)
         btnApply.place(x=270, y=210)
-
         
     def apply_new_configuration(self):
         self.player_name = self.ComboPlayername.get()
@@ -102,5 +101,26 @@ class Raspberry():
             
             self.master.root.after(self.refreshTime*100, self.update_player)
         
+"""
+Widget for orchestration.
+"""
 
+class Orchestration():
+    def __init__(self, master):
+        self.master = master
+        self.root = Toplevel(master.root) # Popup -> Toplevel()
+        self.root.title('Orchestration')
+        self.root.geometry('400x240')
+        self.root.grab_set() # Interaction with main window impossible
 
+        self.textBox = Text(self.root, height=10)
+        self.textBox.pack()
+
+        btnRead = Button(self.root, text="Read", command=self.getTextInput)
+        btnRead.pack()
+        #btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
+
+    def getTextInput(self):
+        self.code = self.textBox.get("1.0","end")
+        print(self.code)
+        self.root.destroy()
