@@ -299,7 +299,7 @@ class Interpreter(DummyInterpreter):
                 # Send console contents to the server
                 if len(message) > 0 and self.client.is_master():
                     self.client.send(MSG_CONSOLE(self.client.id, "\n".join(message)))
-                    return mess
+                    return message
 
                 time.sleep(0.05)
             except ValueError as e:

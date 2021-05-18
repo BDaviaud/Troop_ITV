@@ -25,6 +25,7 @@ class Raspberry():
 
         # List of players playing         
         pattern = re.compile(r'(?<=<)\w+')
+        print("avant l'appel")
         playing = self.master.lang.evaluate2("print('re', Clock.playing)")
         listPlayer = pattern.findall(playing[0])
 
@@ -67,19 +68,21 @@ class Raspberry():
         
     def apply_new_configuration(self):
         self.player_name = self.ComboPlayername.get()
-        self.param = self.ComboParam.get()
-        self.max = float(self.EntryMaxValue.get())
-        self.min = float(self.EntryMinValue.get())
-        self.refreshTime = int(self.SpinboxTime.get())
+        
+        if self.player_name != 'None':
+            self.param = self.ComboParam.get()
+            self.max = float(self.EntryMaxValue.get())
+            self.min = float(self.EntryMinValue.get())
+            self.refreshTime = int(self.SpinboxTime.get())
 
-        val = int(self.min + random.random() * (self.max - self.min))
+            val = int(self.min + random.random() * (self.max - self.min))
+            #Param
+            message = self.player_name + "." + self.param + " = " + str(val) 
+            message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
+            self.master.add_to_send_queue(message_server)
 
-        #Param
-        message = self.player_name + "." + self.param + " = " + str(val) 
-        message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
-        self.master.add_to_send_queue(message_server)
+            self.update_player() # Lance la méthode récursive
 
-        self.update_player() # Lance la méthode récursive
         self.root.destroy() # Close the popup
     
     def update_player(self):
