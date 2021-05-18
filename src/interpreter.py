@@ -173,6 +173,8 @@ class Interpreter(DummyInterpreter):
         self.f_out = tempfile.TemporaryFile("w+", 1) # buffering = 1
         self.is_alive = True
 
+        self.text2 = []
+
         self.setup()
 
     def _get_path(self, path):
@@ -272,7 +274,7 @@ class Interpreter(DummyInterpreter):
         self.write_stdout(string)
         return
 
-    def stdout(self, text=""):
+    def stdout(self, text=[]):
         """ Continually reads the stdout from the self.lang process """
 
         while self.is_alive:
@@ -299,7 +301,7 @@ class Interpreter(DummyInterpreter):
                 # Send console contents to the server
                 if len(message) > 0 and self.client.is_master():
                     self.client.send(MSG_CONSOLE(self.client.id, "\n".join(message)))
-                    return message
+                    self.text2 = message
 
                 time.sleep(0.05)
             except ValueError as e:
@@ -370,11 +372,13 @@ class FoxDotInterpreter(BuiltinInterpreter):
         self.write_stdout(string)
         # Retourne la réponse
         msg = []
-
+        
         while not msg:
-            msg = self.stdout()
-            time.sleep(0.002)       
+            msg = self.text2
+            self.text2= []
+            time.sleep(0.05)       
         return msg
+                  
         
 class TidalInterpreter(BuiltinInterpreter):
     path = 'ghci'

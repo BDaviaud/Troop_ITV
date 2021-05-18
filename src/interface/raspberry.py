@@ -22,11 +22,11 @@ class Raspberry():
         self.root.title('Rasp Config')
         self.root.geometry('350x250')
         self.root.grab_set() # Interaction with main window impossible
-
+        
         # List of players playing         
         pattern = re.compile(r'(?<=<)\w+')
-        print("avant l'appel")
         playing = self.master.lang.evaluate2("print('re', Clock.playing)")
+
         listPlayer = pattern.findall(playing[0])
 
         if not listPlayer:
@@ -64,6 +64,7 @@ class Raspberry():
 
         btnApply = Button(self.root, text='Apply', command=self.apply_new_configuration)
         btnApply.place(x=270, y=210)
+        
         
     def apply_new_configuration(self):
         self.player_name = self.ComboPlayername.get()

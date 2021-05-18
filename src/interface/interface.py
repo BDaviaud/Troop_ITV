@@ -1576,7 +1576,7 @@ class Interface(BasicInterface):
         from .raspberry import Raspberry
         Raspberry(self)
 
-    # Raspeberry 
+    # Orchestration 
     # ==========
 
     def configure_orchestration(self):
