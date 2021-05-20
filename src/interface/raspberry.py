@@ -65,7 +65,6 @@ class Raspberry():
         btnApply = Button(self.root, text='Apply', command=self.apply_new_configuration)
         btnApply.place(x=270, y=210)
         
-        
     def apply_new_configuration(self):
         self.player_name = self.ComboPlayername.get()
         
@@ -105,23 +104,32 @@ class Raspberry():
 """
 Widget for orchestration.
 """
-
 class Orchestration():
     def __init__(self, master):
         self.master = master
         self.root = Toplevel(master.root) # Popup -> Toplevel()
         self.root.title('Orchestration')
-        self.root.geometry('400x240')
+        self.root.geometry('700x500')
         self.root.grab_set() # Interaction with main window impossible
 
-        self.textBox = Text(self.root, height=10)
-        self.textBox.pack()
+        Label(self.root, text='Initial state:').pack()
+        self.textBox1 = Text(self.root, height=10)
+        self.textBox1.pack()
+        Label(self.root, text='Body:').pack()
+        self.textBox2 = Text(self.root, height=10)
+        self.textBox2.pack()
 
         btnRead = Button(self.root, text="Read", command=self.getTextInput)
         btnRead.pack()
         #btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
 
     def getTextInput(self):
-        self.code = self.textBox.get("1.0","end")
-        print(self.code)
+        self.code_initialState = self.textBox1.get("1.0","end")
+        self.code_body = self.textBox2.get("1.0","end")
+        #Evaluation du code
+        self.master.lang.evaluate(self.code_initialState)
+        self.master.lang.evaluate(self.code_body)
+        #message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , self.code)
+        #self.master.add_to_send_queue(message_server)
+
         self.root.destroy()

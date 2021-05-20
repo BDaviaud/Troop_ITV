@@ -93,7 +93,7 @@ class MenuBar(Menu):
         # Raspberry Pi
 
         raspmenu = Menu(self, tearoff=0)
-        raspmenu.add_command(label="Raspberry",   command=self.root.configure_rasp)
+        raspmenu.add_command(label="GPIO",   command=self.root.configure_rasp)
         raspmenu.add_command(label="Orchestration",   command=self.root.configure_orchestration)
         self.add_cascade(label="Configuration", menu=raspmenu)
 
