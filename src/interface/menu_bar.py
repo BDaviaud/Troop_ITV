@@ -93,8 +93,9 @@ class MenuBar(Menu):
         # Raspberry Pi
 
         raspmenu = Menu(self, tearoff=0)
-        raspmenu.add_command(label="GPIO",   command=self.root.configure_rasp)
-        raspmenu.add_command(label="Orchestration",   command=self.root.configure_orchestration)
+        raspmenu.add_command(label="GPIO",   command=self.root.configure_gpio)
+        raspmenu.add_command(label="New Orchestration",   command=self.root.configure_orchestration)
+        raspmenu.add_command(label="Open Orchestration", command=self.root.open_orchestration)
         self.add_cascade(label="Configuration", menu=raspmenu)
 
         # Add to root

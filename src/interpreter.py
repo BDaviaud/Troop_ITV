@@ -376,7 +376,7 @@ class FoxDotInterpreter(BuiltinInterpreter):
         while not msg:
             msg = self.text2
             self.text2= []
-            time.sleep(0.05)       
+            time.sleep(0.002)       
         return msg
                   
         

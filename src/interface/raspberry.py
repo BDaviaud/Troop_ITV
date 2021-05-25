@@ -109,7 +109,7 @@ class Orchestration():
         self.master = master
         self.root = Toplevel(master.root) # Popup -> Toplevel()
         self.root.title('Orchestration')
-        self.root.geometry('700x500')
+        self.root.geometry('700x450')
         self.root.grab_set() # Interaction with main window impossible
 
         Label(self.root, text='Initial state:').pack()
@@ -119,8 +119,8 @@ class Orchestration():
         self.textBox2 = Text(self.root, height=10)
         self.textBox2.pack()
 
-        btnRead = Button(self.root, text="Read", command=self.getTextInput)
-        btnRead.pack()
+        btnRead = Button(self.root, text="Read", command=self.getTextInput).pack()
+
         #btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
 
     def getTextInput(self):
@@ -129,7 +129,27 @@ class Orchestration():
         #Evaluation du code
         self.master.lang.evaluate(self.code_initialState)
         self.master.lang.evaluate(self.code_body)
-        #message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , self.code)
-        #self.master.add_to_send_queue(message_server)
+
+        self.master.listOrchestrations.append([len(self.master.listOrchestrations), self])
 
         self.root.destroy()
+
+    def update(self, code):
+        # Evaluate new code et the body
+        self.master.lang.evaluate(code)
+        self.master.lang.evaluate(self.code_body)
+    
+    def openOrchestration(self, master):
+        self.master.popup.destroy()
+        popup = Toplevel(master.root)
+
+        newCode = Text(popup)
+        newCode.pack(side=LEFT)
+        newCode.insert('1.0', self.code_initialState)
+
+        textCodeBody = Text(popup)
+        textCodeBody.pack(side=RIGHT)
+        textCodeBody.insert('1.0', self.code_body)
+        textCodeBody['state'] = 'disabled'
+
+        btnUpdate = Button(popup, text='Update', command = lambda: self.update(newCode.get("1.0","end"))).pack()

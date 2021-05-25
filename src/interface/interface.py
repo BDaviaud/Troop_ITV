@@ -14,6 +14,7 @@ from .bracket import BracketHandler
 from .line_numbers import LineNumbers
 from .menu_bar import MenuBar, PopupMenu
 from .mouse import Mouse
+from .raspberry import Raspberry, Orchestration
 
 try:
     from Tkinter import *
@@ -217,6 +218,8 @@ class Interface(BasicInterface):
         # Right-click menu
 
         self.popup = PopupMenu(self)
+
+        self.listOrchestrations = []
 
         # Key bindings
 
@@ -1571,14 +1574,34 @@ class Interface(BasicInterface):
     # Raspeberry 
     # ==========
 
-    def configure_rasp(self):
+    def configure_gpio(self):
         """ Opens a popup to configure a new entry of the raspberry"""
-        from .raspberry import Raspberry
         Raspberry(self)
 
     # Orchestration 
     # ==========
 
     def configure_orchestration(self):
-        from .raspberry import Orchestration
         Orchestration(self)
+
+    def open_orchestration(self):
+        #Orchestration.openOrchestration(self)
+        self.popup = Toplevel(self.root)
+        self.popup.geometry('300x200')
+
+        if not self.listOrchestrations:
+            listOrchestrationIds = ["None"]
+        else:
+            listOrchestrationIds = []
+            for element in self.listOrchestrations:
+                listOrchestrationIds.append(element[0])
+
+        Label(self.popup, text='Chose an existant orchestration :').pack()
+        self.combo = ttk.Combobox(self.popup, values=listOrchestrationIds)
+        self.combo.current(0)
+        self.combo.pack()
+        if not self.listOrchestrations:
+            btnOpen = Button(self.popup, text="Open", state=DISABLED).pack()
+        else:
+            btnOpen = Button(self.popup, text="Open", command=lambda: self.listOrchestrations[int(self.combo.get())][1].openOrchestration(self)).pack()
+
