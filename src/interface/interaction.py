@@ -126,30 +126,19 @@ class Orchestration():
     def getTextInput(self):
         self.code_initialState = self.textBox1.get("1.0","end")
         self.code_body = self.textBox2.get("1.0","end")
-        #Evaluation du code
+        # Evaluation du code
         self.master.lang.evaluate(self.code_initialState)
         self.master.lang.evaluate(self.code_body)
 
         self.master.listOrchestrations.append([len(self.master.listOrchestrations), self])
 
+        self.update()
+
         self.root.destroy()
 
-    def update(self, code):
-        # Evaluate new code et the body
-        self.master.lang.evaluate(code)
+    def update(self):
+        # Méthode récursive qui réexécute le corps du code.
+        
         self.master.lang.evaluate(self.code_body)
-    
-    def openOrchestration(self, master):
-        self.master.popup.destroy()
-        popup = Toplevel(master.root)
 
-        newCode = Text(popup)
-        newCode.pack(side=LEFT)
-        newCode.insert('1.0', self.code_initialState)
-
-        textCodeBody = Text(popup)
-        textCodeBody.pack(side=RIGHT)
-        textCodeBody.insert('1.0', self.code_body)
-        textCodeBody['state'] = 'disabled'
-
-        btnUpdate = Button(popup, text='Update', command = lambda: self.update(newCode.get("1.0","end"))).pack()
+        self.master.root.after(200, self.update)

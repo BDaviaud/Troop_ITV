@@ -1583,25 +1583,3 @@ class Interface(BasicInterface):
 
     def configure_orchestration(self):
         Orchestration(self)
-
-    def open_orchestration(self):
-        #Orchestration.openOrchestration(self)
-        self.popup = Toplevel(self.root)
-        self.popup.geometry('300x200')
-
-        if not self.listOrchestrations:
-            listOrchestrationIds = ["None"]
-        else:
-            listOrchestrationIds = []
-            for element in self.listOrchestrations:
-                listOrchestrationIds.append(element[0])
-
-        Label(self.popup, text='Chose an existant orchestration :').pack()
-        self.combo = ttk.Combobox(self.popup, values=listOrchestrationIds)
-        self.combo.current(0)
-        self.combo.pack()
-        if not self.listOrchestrations:
-            btnOpen = Button(self.popup, text="Open", state=DISABLED).pack()
-        else:
-            btnOpen = Button(self.popup, text="Open", command=lambda: self.listOrchestrations[int(self.combo.get())][1].openOrchestration(self)).pack()
-
