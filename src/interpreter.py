@@ -173,7 +173,8 @@ class Interpreter(DummyInterpreter):
         self.f_out = tempfile.TemporaryFile("w+", 1) # buffering = 1
         self.is_alive = True
 
-        self.text2 = []
+        ## Variable pour partager les messages reçus dans stdout() avec la méthode evaluate2 de l'intepreter FoxDot
+        self.current_message = []
 
         self.setup()
 
@@ -274,7 +275,7 @@ class Interpreter(DummyInterpreter):
         self.write_stdout(string)
         return
 
-    def stdout(self, text=[]):
+    def stdout(self, text=""):
         """ Continually reads the stdout from the self.lang process """
 
         while self.is_alive:
@@ -291,17 +292,23 @@ class Interpreter(DummyInterpreter):
 
                 for stdout_line in iter(self.f_out.readline, ""):
                     line = stdout_line.rstrip()
+
+                    ## Les messages (hormis ceux commançant par "re" => les messages en réponse des requêtes 
+                    ## envoyés par SensorInteraction) sont affichés dans la console Troop.
                     if not pattern.match(line):
                         sys.stdout.write(line)
+
                     message.append(line)
 
+                ## Attribut qui stock le message afin de récupérer ce dernier dans la méthode evaluate2
+                self.current_message = message
+                
                 # clear tmpfile
                 self.f_out.truncate(0)
 
                 # Send console contents to the server
                 if len(message) > 0 and self.client.is_master():
                     self.client.send(MSG_CONSOLE(self.client.id, "\n".join(message)))
-                    self.text2 = message
 
                 time.sleep(0.05)
             except ValueError as e:
@@ -368,14 +375,15 @@ class FoxDotInterpreter(BuiltinInterpreter):
         return "Clock.clear()"
 
     def evaluate2(self, string):
+        """ Envoie le string au serveur et récupère la réponse afin de la retourner en sortie """
         # Envoie la commande
         self.write_stdout(string)
         # Retourne la réponse
         msg = []
         
         while not msg:
-            msg = self.text2
-            self.text2= []
+            msg = self.current_message
+            self.current_message = []
             time.sleep(0.002)       
         return msg
                   

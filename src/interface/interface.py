@@ -14,7 +14,7 @@ from .bracket import BracketHandler
 from .line_numbers import LineNumbers
 from .menu_bar import MenuBar, PopupMenu
 from .mouse import Mouse
-from .raspberry import Raspberry, Orchestration
+from .interaction import SensorInteraction, Orchestration
 
 try:
     from Tkinter import *
@@ -1576,7 +1576,7 @@ class Interface(BasicInterface):
 
     def configure_gpio(self):
         """ Opens a popup to configure a new entry of the raspberry"""
-        Raspberry(self)
+        SensorInteraction(self)
 
     # Orchestration 
     # ==========

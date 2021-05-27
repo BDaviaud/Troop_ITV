@@ -15,7 +15,7 @@ except ImportError:
 Widget for raspberry input.
 """
 
-class Raspberry():
+class SensorInteraction():
     def __init__(self, master):
         self.master = master
         self.root = Toplevel(master.root) # Popup -> Toplevel()
