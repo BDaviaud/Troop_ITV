@@ -283,7 +283,7 @@ class Interpreter(DummyInterpreter):
                 self.is_alive = False
                 break
             try:
-                pattern = re.compile("re")
+                pattern = re.compile("rasp")
                 # Check contents of file
                 # TODO -- get control of f_out and stdout
                 self.f_out.seek(0)
@@ -295,7 +295,7 @@ class Interpreter(DummyInterpreter):
 
                     ## Les messages (hormis ceux commançant par "re" => les messages en réponse des requêtes 
                     ## envoyés par SensorInteraction) sont affichés dans la console Troop.
-                    if not pattern.match(line):
+                    if not pattern.search(line):
                         sys.stdout.write(line)
 
                     message.append(line)

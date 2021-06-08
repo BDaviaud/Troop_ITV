@@ -219,8 +219,6 @@ class Interface(BasicInterface):
 
         self.popup = PopupMenu(self)
 
-        self.listOrchestrations = []
-
         # Key bindings
 
         CtrlKey = "Command" if SYSTEM == MAC_OS else "Control"
