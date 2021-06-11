@@ -56,10 +56,10 @@ class SensorInteraction():
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
         btnCancel.place(x=10, y=130)
 
-        btnApply = Button(self.root, text='Apply', command=self.apply_new_configuration)
+        btnApply = Button(self.root, text='Apply', command=self.apply_configuration)
         btnApply.place(x=270, y=130)
         
-    def apply_new_configuration(self):
+    def apply_configuration(self):
         self.player_name = self.ComboPlayername.get()
         
         if self.player_name != 'None':
@@ -67,34 +67,33 @@ class SensorInteraction():
             self.GPIOid = int(self.SpinboxGPIO.get())
             
             GPIO.setmode(GPIO.BOARD)
-            GPIO.setup(self.GPIOid, GPIO.OUT)
-
-            self.current_value = GPIO.input(self.GPIOid)
-            #Param
-            message = self.player_name + "." + self.param + " = " + str(self.current_value) 
-            message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
-            self.master.add_to_send_queue(message_server)
-
-            self.update_player() # Lance la méthode récursive
+            GPIO.setup(self.GPIOid, GPIO.IN)
+            
+            self.update(self.GPIOid)
+            # Add an event listener on the gpio input. 
+            GPIO.add_event_detect(self.GPIOid, GPIO.BOTH, callback=self.update, bouncetime = 75)
 
         self.root.destroy() # Close the popup
-    
-    def update_player(self):
         
-        # Récupératinon de la variable isplaying du player (La valeur est retournée sous forme d'un tableau de string)
+    def update(self, channel):
+        # Demande au serveur de l'état du player et récupération de la réponse
         commande = 'print("rasp", ' + self.player_name + '.isplaying)'
         isplaying = self.master.lang.evaluate2(commande)
-
-        if isplaying[0] == 're False':
-            return
+        isplaying = isplaying[0].rsplit(None, 1)[-1] # Retourne le dernier mot de la chaine de caractères
+        
+        if isplaying == 'False':
+            # Supprime les interruptions sur ce cannal
+            GPIO.remove_event_detect(self.GPIOid)
         else:
-            if GPIO.input(self.GPIOid) != self.current_value:
-                self.current_value = GPIO.input(self.GPIOid)
-                message = self.player_name + "." + self.param + " = " + str(self.current_value)
-                message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
-                self.master.add_to_send_queue(message_server)
+            self.current_value = GPIO.input(self.GPIOid)
+            message = self.player_name + "." + self.param + " = " + str(self.current_value) # player_name.param = current_value
+            # On envoie le message (objet MESSAGE) dans la queue pour qu'il soit executé par tous les clients.
+            message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
+            self.master.add_to_send_queue(message_server)
             
-            self.master.root.after(200, self.update_player)
+            
+            
+        
         
 """
 Widget for orchestration.
@@ -141,17 +140,19 @@ class Orchestration():
         for state in self.listStates:
             if state.currentValue == 'True':
                 self.master.add_to_send_queue(MSG_EVALUATE_STRING(self.master.text.marker.id , state.action))
-
-
-        self.update()
-
+        
+        for trans in self.listTransitions:
+            GPIO.add_event_detect(trans.gpioId, GPIO.BOTH, callback=self.update, bouncetime = 75)
+        
         self.root.destroy()
-
-    def update(self):
+    
+    def update(self, channel):
         # Mise à jour des valeurs de transitions
         for trans in self.listTransitions:
-            trans.currentValue = GPIO.input(trans.gpioId)
-        self.master.lang.evaluate(self.getCode(self.listTransitions))
+            if trans.gpioId == channel:
+                trans.currentValue = GPIO.input(trans.gpioId)
+            self.master.lang.evaluate(self.getCode(self.listTransitions))
+        
         # Mise à jour des Etats avec nouvelle valeur de transitions
         self.master.lang.evaluate(self.codeStates)
         
@@ -161,10 +162,7 @@ class Orchestration():
             newValue = self.master.lang.evaluate2(commande) # Warning : return a list of string
             newValue = newValue[0].rsplit(None, 1)[-1] # Retourne le dernier mot de la chaine de caractères
             state.updateState(newValue)
-            
-
-        self.master.root.after(200, self.update)
-        
+    
     def getCode(self, listItems):
         code = ""
         for item in listItems:
@@ -216,6 +214,7 @@ class StateOrchestration():
             self.master.textStates.configure(state='disabled')
         
         self.root.destroy()
+        
     def updateState(self, newValue):
         if self.currentValue != newValue:
             self.currentValue = newValue
@@ -256,7 +255,7 @@ class TransitionOrchestration():
             self.gpioId = int(self.spinboxGPIO.get())
 
             GPIO.setmode(GPIO.BOARD)
-            GPIO.setup(self.gpioId, GPIO.OUT)
+            GPIO.setup(self.gpioId, GPIO.IN)
             self.currentValue = GPIO.input(self.gpioId)
             
             self.master.listTransitions.append(self)
@@ -266,6 +265,8 @@ class TransitionOrchestration():
             self.master.textTransitions.configure(state='disabled')
         
         self.root.destroy()
+
+        
         
 
 

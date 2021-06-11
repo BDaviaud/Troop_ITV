@@ -174,7 +174,8 @@ class Interpreter(DummyInterpreter):
         self.is_alive = True
 
         ## Variable pour partager les messages reçus dans stdout() avec la méthode evaluate2 de l'intepreter FoxDot
-        self.current_message = []
+        self.message_rasp = []
+        self.mutex = threading.Lock()
 
         self.setup()
 
@@ -299,16 +300,19 @@ class Interpreter(DummyInterpreter):
                         sys.stdout.write(line)
 
                     message.append(line)
-
-                ## Attribut qui stock le message afin de récupérer ce dernier dans la méthode evaluate2
-                self.current_message = message
                 
                 # clear tmpfile
                 self.f_out.truncate(0)
 
                 # Send console contents to the server
-                if len(message) > 0 and self.client.is_master():
-                    self.client.send(MSG_CONSOLE(self.client.id, "\n".join(message)))
+                if len(message) > 0 :
+                    if self.client.is_master():
+                        self.client.send(MSG_CONSOLE(self.client.id, "\n".join(message)))
+                    if pattern.search(message[0]):
+                        ## Attribut qui stock le message afin de récupérer ce dernier dans la méthode evaluate2
+                        self.mutex.acquire()
+                        self.message_rasp.append(message)
+                        self.mutex.release()
 
                 time.sleep(0.05)
             except ValueError as e:
@@ -382,9 +386,11 @@ class FoxDotInterpreter(BuiltinInterpreter):
         msg = []
         
         while not msg:
-            msg = self.current_message
-            self.current_message = []
-            time.sleep(0.002)       
+            self.mutex.acquire()  
+            if self.message_rasp:
+                msg = self.message_rasp.pop(0)
+            self.mutex.release()
+            time.sleep(0.5)       
         return msg
                   
         
