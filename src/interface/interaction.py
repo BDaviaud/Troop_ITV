@@ -56,22 +56,22 @@ class SensorInteraction():
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
         btnCancel.place(x=10, y=130)
 
-        btnApply = Button(self.root, text='Apply', command=self.apply_configuration)
+        btnApply = Button(self.root, text='Apply', command=self.getInput)
         btnApply.place(x=270, y=130)
         
-    def apply_configuration(self):
+    def getInput(self):
         self.player_name = self.ComboPlayername.get()
         
         if self.player_name != 'None':
             self.param = self.ComboParam.get()
-            self.GPIOid = int(self.SpinboxGPIO.get())
+            self.gpioId = int(self.SpinboxGPIO.get())
             
             GPIO.setmode(GPIO.BOARD)
-            GPIO.setup(self.GPIOid, GPIO.IN)
+            GPIO.setup(self.gpioId, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             
-            self.update(self.GPIOid)
+            self.update(self.gpioId)
             # Add an event listener on the gpio input. 
-            GPIO.add_event_detect(self.GPIOid, GPIO.BOTH, callback=self.update, bouncetime = 75)
+            GPIO.add_event_detect(self.gpioId, GPIO.BOTH, callback=self.update, bouncetime = 75)
 
         self.root.destroy() # Close the popup
         
@@ -83,9 +83,9 @@ class SensorInteraction():
         
         if isplaying == 'False':
             # Supprime les interruptions sur ce cannal
-            GPIO.remove_event_detect(self.GPIOid)
+            GPIO.remove_event_detect(self.gpioId)
         else:
-            self.current_value = GPIO.input(self.GPIOid)
+            self.current_value = GPIO.input(self.gpioId)
             message = self.player_name + "." + self.param + " = " + str(self.current_value) # player_name.param = current_value
             # On envoie le message (objet MESSAGE) dans la queue pour qu'il soit executé par tous les clients.
             message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
@@ -198,10 +198,10 @@ class StateOrchestration():
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
         btnCancel.place(x=10, y=310)
 
-        btnSave = Button(self.root, text='Save', command=self.saveState)
+        btnSave = Button(self.root, text='Save', command=self.getInput)
         btnSave.place(x=270, y=310)
         
-    def saveState(self):
+    def getInput(self):
         if self.entryName.get() != "":
             self.name = self.entryName.get()
             self.currentValue = self.comboValues.get()
@@ -246,16 +246,16 @@ class TransitionOrchestration():
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
         btnCancel.place(x=10, y=90)
 
-        btnSave = Button(self.root, text='Save', command=self.saveTransition)
+        btnSave = Button(self.root, text='Save', command=self.getInput)
         btnSave.place(x=270, y=90)
     
-    def saveTransition(self):
+    def getInput(self):
         if self.entryName.get() != "":
             self.name = self.entryName.get()
             self.gpioId = int(self.spinboxGPIO.get())
 
             GPIO.setmode(GPIO.BOARD)
-            GPIO.setup(self.gpioId, GPIO.IN)
+            GPIO.setup(self.gpioId, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             self.currentValue = GPIO.input(self.gpioId)
             
             self.master.listTransitions.append(self)
