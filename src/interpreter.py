@@ -390,7 +390,7 @@ class FoxDotInterpreter(BuiltinInterpreter):
             if self.message_rasp:
                 msg = self.message_rasp.pop(0)
             self.mutex.release()
-            time.sleep(0.5)       
+            time.sleep(0.02)       
         return msg
                   
         
