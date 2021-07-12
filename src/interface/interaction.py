@@ -22,37 +22,37 @@ class SensorInteraction():
         self.root = Toplevel(master.root) # Popup
         self.root.title('Sensor and Player Configuration')
         self.root.geometry('360x170')
-        self.root.grab_set() # Empêche d'interagir avec la fenêtre principale
+        self.root.grab_set() # Prevents interaction with the main window
         
-        # Liste des players en cours d'execution        
+        # List of FoxDoT players        
         pattern = re.compile(r'(?<=<)\w+')
         playing = self.master.lang.evaluate2("print('rasp', Clock.playing)")
 
-        listPlayer = pattern.findall(playing[0])
+        listPlayers = pattern.findall(playing[0])
 
-        if not listPlayer:
-            listPlayer = ['None']
-
-        # Nom du player
+        if not listPlayers:
+            listPlayers = ['None']
+        
+        ### Popup interface
+        # Drop-down list to choose the player
         Label(self.root, text='Choose a player :').place(x=10, y=10)
-        self.ComboPlayername = ttk.Combobox(self.root, values=listPlayer)
+        self.ComboPlayername = ttk.Combobox(self.root, values=listPlayers)
         self.ComboPlayername.current(0)
         self.ComboPlayername.place(x=160, y=10)
 
-        # Paramêtre
+        # Drop-down list to choose the player parameter
         Label(self.root, text='Choose a attribute:').place(x=10, y=50)
         listParam=["dur","degree", "playstring", "oct","delay", "blur", "amplify", "scale", "bpm", "sample", "sus", "fmod", "pan", "rate", "amp", "vib", "vibdepth", "slide", "sus", "slidedelay", "slidefrom", "bend", "benddelay", "coarse", "striate", "pshift", "hpf", "hpr", "lpf", "lpr", "swell", "bpf", "bits", "crush", "dist", "chop", "tremolo", "echo", "decay", "spin", "cut", "room", "mix", "formant", "shape"]
         self.ComboParam = ttk.Combobox(self.root, values=listParam)
         self.ComboParam.current(0)
         self.ComboParam.place(x=160, y=50)
         
-        # Numéro de pin pour l'entrée GPIO
+        # Pin number for GPIO input
         Label(self.root, text='Input pin GPIO :').place(x=10, y=90)
         self.SpinboxGPIO = Spinbox(self.root, from_=1, to=40)
         self.SpinboxGPIO.place(x=160, y=90)
         
         # Buttons
-
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
         btnCancel.place(x=10, y=130)
 
@@ -60,6 +60,10 @@ class SensorInteraction():
         btnApply.place(x=270, y=130)
         
     def getInput(self):
+        """ Method called when the 'Apply' button is activated.
+            If a player is selected, the interface inputs are saved
+            and the GPIO input is configured.
+        """
         self.player_name = self.ComboPlayername.get()
         
         if self.player_name != 'None':
@@ -76,18 +80,21 @@ class SensorInteraction():
         self.root.destroy() # Close the popup
         
     def update(self, channel):
-        # Demande au serveur de l'état du player et récupération de la réponse
+        """ This method is the callback function called when the value changes on the GPIO input.
+            It updates the value of the player parameter.
+        """
+        # Ask the FoxDot interpreter the state of the player.
         commande = 'print("rasp", ' + self.player_name + '.isplaying)'
         isplaying = self.master.lang.evaluate2(commande)
-        isplaying = isplaying[0].rsplit(None, 1)[-1] # Retourne le dernier mot de la chaine de caractères
+        isplaying = isplaying[0].rsplit(None, 1)[-1] # returns the last word of the string
         
         if isplaying == 'False':
-            # Supprime les interruptions sur ce cannal
+            # If the player is stopped, the event handler on this channel is removed
             GPIO.remove_event_detect(self.gpioId)
         else:
             self.current_value = GPIO.input(self.gpioId)
             message = self.player_name + "." + self.param + " = " + str(self.current_value) # player_name.param = current_value
-            # On envoie le message (objet MESSAGE) dans la queue pour qu'il soit executé par tous les clients.
+            # The message is aded to the queue to be sent to the Troop server.
             message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
             self.master.add_to_send_queue(message_server)
             
@@ -109,16 +116,20 @@ class Orchestration():
         self.listStates = []
         self.listTransitions = []
         
+        ### Popup Interface
+        # Input for the python code 
         Label(self.root, text='Code:').place(x=10, y=10)
         self.textCode = Text(self.root, height=20, width=30)
         self.textCode.place(x=10, y=40)
         
-        Label(self.root, text='Initials states:').place(x=260, y=10)
+        # List of implemented states
+        Label(self.root, text='States:').place(x=260, y=10)
         self.textStates = Text(self.root, height=10, width=30)
         self.textStates.place(x=260, y=40)
         self.textStates.configure(state='disabled')
         Button(self.root, text="Add State", command=lambda: StateOrchestration(self)).place(x=415, y=10)
         
+        # List of implemented transitions
         Label(self.root, text='Transitions:').place(x=260, y=230)
         self.textTransitions = Text(self.root, height=10, width=30)
         self.textTransitions.place(x=260, y=260)
@@ -128,42 +139,47 @@ class Orchestration():
 
         Button(self.root, text="Read", command=self.getInput).place(x=100, y=400)
 
-        #btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
-
     def getInput(self):
+        """ Method called by the 'Read' button of the Orchestration popup.
+            The Orchestration inputs are saved et the orchestration is evaluated."""
         self.codeStates = self.textCode.get("1.0","end")
         
-        # Instancier les valeurs des transitions et des Etats initiaux du point de vue de l'interpreter FoxDot.
+        # Instantiates values of the transitions and the states by the interpreter.
         self.master.lang.evaluate(self.getCode(self.listTransitions))
         self.master.lang.evaluate(self.getCode(self.listStates))
         
+        # Evaluation of the FoxDot code of the active state (initial state)
         for state in self.listStates:
             if state.currentValue == 'True':
                 self.master.add_to_send_queue(MSG_EVALUATE_STRING(self.master.text.marker.id , state.action))
         
+        # Active an event handler on the gpio input of each transition.
         for trans in self.listTransitions:
             GPIO.add_event_detect(trans.gpioId, GPIO.BOTH, callback=self.update, bouncetime = 75)
         
         self.root.destroy()
     
     def update(self, channel):
-        # Mise à jour des valeurs de transitions
+        """ Callback function called when the value changes on the GPIO input.
+            Updates the value of the transitions and the states."""
+        # Update of transitions value.
         for trans in self.listTransitions:
             if trans.gpioId == channel:
                 trans.currentValue = GPIO.input(trans.gpioId)
             self.master.lang.evaluate(self.getCode(self.listTransitions))
         
-        # Mise à jour des Etats avec nouvelle valeur de transitions
+        # Update of states value with the new transitions.
         self.master.lang.evaluate(self.codeStates)
         
-        #Récupération des nouvelles valeurs d'etat
+        # Ask the new state value to the interpreter.
         for state in self.listStates:
             commande = 'print("rasp", ' + state.name + ')'
             newValue = self.master.lang.evaluate2(commande) # Warning : return a list of string
-            newValue = newValue[0].rsplit(None, 1)[-1] # Retourne le dernier mot de la chaine de caractères
+            newValue = newValue[0].rsplit(None, 1)[-1] # Returns the last word of the string.
             state.updateState(newValue)
     
     def getCode(self, listItems):
+        """ Take a list of States or Transitions and a returns a python code in string form."""
         code = ""
         for item in listItems:
             code += item.name + " = " + str(item.currentValue) + "\n"          
@@ -194,7 +210,6 @@ class StateOrchestration():
         self.textAction.place(x=10, y=120)
         
         # Buttons
-
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
         btnCancel.place(x=10, y=310)
 
@@ -202,6 +217,8 @@ class StateOrchestration():
         btnSave.place(x=270, y=310)
         
     def getInput(self):
+        """ Method called by the 'Save' button of the StateOrchestration popup.
+            Saved the interface inputs and add to the list of states of the Orchestration class. """
         if self.entryName.get() != "":
             self.name = self.entryName.get()
             self.currentValue = self.comboValues.get()
@@ -216,17 +233,18 @@ class StateOrchestration():
         self.root.destroy()
         
     def updateState(self, newValue):
+        """ Updates the value of the state, and if it becomes active, evaluates its FoxDot code (action). """
         if self.currentValue != newValue:
             self.currentValue = newValue
             if newValue == 'True':
-                # Ajout du code FoxDot de l'etat à la queue pour qu'il soit envoyé à tous les clients
+                # Adds the FoxDot code to the queue to be sent to all clients.
                 self.master.master.add_to_send_queue(MSG_EVALUATE_STRING(self.master.master.text.marker.id , self.action))
         
 class TransitionOrchestration():
     def __init__(self, master):
         self.master = master
         self.root = Toplevel(master.root) # Popup
-        self.root.title('Add a state')
+        self.root.title('Add a transition')
         self.root.geometry('360x120')
         self.root.grab_set()
         
@@ -235,14 +253,12 @@ class TransitionOrchestration():
         self.entryName = Entry(self.root)
         self.entryName.place(x=160, y=10)
         
-        # Numéro de pin pour l'entrée GPIO
+        # Pin number for GPIO input
         Label(self.root, text='Input pin GPIO :').place(x=10, y=50)
         self.spinboxGPIO = Spinbox(self.root, from_=1, to=40)
         self.spinboxGPIO.place(x=160, y=50)
         
-        
         # Buttons
-
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
         btnCancel.place(x=10, y=90)
 
@@ -250,6 +266,8 @@ class TransitionOrchestration():
         btnSave.place(x=270, y=90)
     
     def getInput(self):
+        """ Method called by the 'Save' button of the TransitionOrchestration popup.
+            Saved the interface inputs and add to the list of transitions of the Orchestration class. """
         if self.entryName.get() != "":
             self.name = self.entryName.get()
             self.gpioId = int(self.spinboxGPIO.get())

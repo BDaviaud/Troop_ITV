@@ -294,8 +294,7 @@ class Interpreter(DummyInterpreter):
                 for stdout_line in iter(self.f_out.readline, ""):
                     line = stdout_line.rstrip()
 
-                    ## Les messages (hormis ceux commançant par "re" => les messages en réponse des requêtes 
-                    ## envoyés par SensorInteraction) sont affichés dans la console Troop.
+                    ## Messages (except those beging with "rasp") are displayed in the Troop console.
                     if not pattern.search(line):
                         sys.stdout.write(line)
 
@@ -309,8 +308,8 @@ class Interpreter(DummyInterpreter):
                     if self.client.is_master():
                         self.client.send(MSG_CONSOLE(self.client.id, "\n".join(message)))
                     if pattern.search(message[0]):
-                        ## Attribut qui stock le message afin de récupérer ce dernier dans la méthode evaluate2
-                        self.mutex.acquire()
+                        ## Variable that stores the message in order to retrieve it in the evaluate2 method (protected by a semaphore)
+                        self.mutex.acquire() 
                         self.message_rasp.append(message)
                         self.mutex.release()
 
@@ -379,12 +378,12 @@ class FoxDotInterpreter(BuiltinInterpreter):
         return "Clock.clear()"
 
     def evaluate2(self, string):
-        """ Envoie le string au serveur et récupère la réponse afin de la retourner en sortie """
-        # Envoie la commande
+        """ Sends the string to the FoxDot sub-process and retrieves the response and returns it. """
+        # Sends the request
         self.write_stdout(string)
-        # Retourne la réponse
-        msg = []
         
+        # Retrieves the answer.
+        msg = []
         while not msg:
             self.mutex.acquire()  
             if self.message_rasp:
