@@ -93,8 +93,9 @@ class MenuBar(Menu):
         # Raspberry Pi
 
         interactionMenu = Menu(self, tearoff=0)
-        interactionMenu.add_command(label="Sensor",   command=self.root.configure_gpio)
-        interactionMenu.add_command(label="Orchestration",   command=self.root.configure_orchestration)
+        interactionMenu.add_command(label="Add a sensor",   command=self.root.configure_gpio)
+        interactionMenu.add_command(label="New Sensor Interaction",   command=self.root.configure_sensorInteraction)
+        interactionMenu.add_command(label="New Orchestration",   command=self.root.configure_orchestration)
         self.add_cascade(label="Interactives Features", menu=interactionMenu)
 
         # Add to root

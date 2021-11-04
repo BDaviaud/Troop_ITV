@@ -14,7 +14,7 @@ from .bracket import BracketHandler
 from .line_numbers import LineNumbers
 from .menu_bar import MenuBar, PopupMenu
 from .mouse import Mouse
-from .interaction import SensorInteraction, Orchestration
+from .interaction import SensorInteraction, Orchestration, SensorGPIO
 
 try:
     from Tkinter import *
@@ -66,6 +66,8 @@ class BasicInterface:
         self.last_col       = 0
 
         self._debug_queue = []
+        
+        self.listGpio = []
 
     def run(self):
         """ Starts the Tkinter loop and exits cleanly if interrupted"""
@@ -1569,11 +1571,16 @@ class Interface(BasicInterface):
         self.logfile.recreate()
         return
 
-    # Raspeberry 
+    # GPIO Configuration  
     # ==========
 
     def configure_gpio(self):
         """ Opens a popup to configure a new entry of the raspberry"""
+        SensorGPIO(self)
+        
+    # Sensor Interaction 
+    # ==========
+    def configure_sensorInteraction(self):
         SensorInteraction(self)
 
     # Orchestration 

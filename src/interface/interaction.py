@@ -11,6 +11,62 @@ try:
 except ImportError:
     from tkinter import *
     from tkinter import ttk
+"""
+Widget for raspberry input.
+"""
+class ConfigGpio():
+    def __init__(self, master):
+        self.master = master
+        self.root = Toplevel(master.root)
+        self.root.title('Add GPIO')
+        self.root.geometry('360x170')
+        self.root.grab_set() # Prevents interaction with the main window
+        
+        # State name
+        Label(self.root, text='Name :').place(x=10, y=10)
+        self.entryName = Entry(self.root)
+        self.entryName.place(x=160, y=10)
+        
+        # Pin number for GPIO input
+        Label(self.root, text='Input pin GPIO :').place(x=10, y=50)
+        self.spinboxGPIO = Spinbox(self.root, from_=1, to=40)
+        self.spinboxGPIO.place(x=160, y=50)
+        
+        # Displays the list of GPIOs already configured
+        Label(self.root, text='GPIO configured:').place(x=10, y=90)
+        self.textStates = Text(self.root, height=10, width=30)
+        self.textStates.place(x=10, y=120)
+        
+        for gpio in listGpio :
+            textStates.insert(END, gpio[0] + " (pin " + gpio[1] + ")\n")
+        self.textStates.configure(state='disabled')
+        
+        # Buttons
+        btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
+        btnCancel.place(x=10, y=130)
+
+        btnApply = Button(self.root, text='Add', command= lambda : self.add(master))
+        btnApply.place(x=270, y=130)
+    
+    def add(master):
+        """ Method called by the 'Save' button of the TransitionOrchestration popup.
+            Saved the interface inputs and add to the list of transitions of the Orchestration class. """
+        if self.entryName.get() != "":
+            self.name = self.entryName.get()
+            self.gpioId = int(self.spinboxGPIO.get())
+
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(self.gpioId, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            self.currentValue = GPIO.input(self.gpioId)
+            
+            self.master.listTransitions.append(self)
+            
+            self.master.textTransitions.configure(state='normal')
+            self.master.textTransitions.insert(END, self.name + " => pin " + str(self.gpioId) + "\n")
+            self.master.textTransitions.configure(state='disabled')
+        
+        self.root.destroy()
+        
 
 """
 Widget for raspberry input.
@@ -47,10 +103,18 @@ class SensorInteraction():
         self.ComboParam.current(0)
         self.ComboParam.place(x=160, y=50)
         
-        # Pin number for GPIO input
-        Label(self.root, text='Input pin GPIO :').place(x=10, y=90)
-        self.SpinboxGPIO = Spinbox(self.root, from_=1, to=40)
-        self.SpinboxGPIO.place(x=160, y=90)
+        listSensor = []
+        # Drop-down list to choose the sensor
+        if not self.master.listGpio :
+            listSensor = 'None'
+        else :
+            for gpio in self.master.listGpio:
+                listSensor.append(gpio.name)
+                
+        Label(self.root, text='Choose a sensor :').place(x=10, y=90)
+        self.ComboSensor = ttk.Combobox(self.root, values=listSensor)
+        self.ComboSensor.current(0)
+        self.ComboSensor.place(x=160, y=90)
         
         # Buttons
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
@@ -68,10 +132,13 @@ class SensorInteraction():
         
         if self.player_name != 'None':
             self.param = self.ComboParam.get()
-            self.gpioId = int(self.SpinboxGPIO.get())
             
-            GPIO.setmode(GPIO.BOARD)
-            GPIO.setup(self.gpioId, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            for gpio in self.master.listGpio :
+                if gpio.name == self.ComboSensor.get():
+                    self.gpioId = gpio.gpioId
+            
+            #GPIO.setmode(GPIO.BOARD)
+            #GPIO.setup(self.gpioId, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             
             self.update(self.gpioId)
             # Add an event listener on the gpio input. 
@@ -91,6 +158,8 @@ class SensorInteraction():
         if isplaying == 'False':
             # If the player is stopped, the event handler on this channel is removed
             GPIO.remove_event_detect(self.gpioId)
+            
+            #GPIO.cleanup(channel)
         else:
             self.current_value = GPIO.input(self.gpioId)
             message = self.player_name + "." + self.param + " = " + str(self.current_value) # player_name.param = current_value
@@ -114,7 +183,7 @@ class Orchestration():
         self.root.grab_set() # Interaction with main window impossible
         
         self.listStates = []
-        self.listTransitions = []
+        self.listTransitions = self.master.listGpio
         
         ### Popup Interface
         # Input for the python code 
@@ -129,12 +198,14 @@ class Orchestration():
         self.textStates.configure(state='disabled')
         Button(self.root, text="Add State", command=lambda: StateOrchestration(self)).place(x=415, y=10)
         
-        # List of implemented transitions
-        Label(self.root, text='Transitions:').place(x=260, y=230)
-        self.textTransitions = Text(self.root, height=10, width=30)
-        self.textTransitions.place(x=260, y=260)
-        self.textTransitions.configure(state='disabled')
-        Button(self.root, text="Add Transition", command=lambda: TransitionOrchestration(self)).place(x=380, y=230)
+        # List of implemented sensors
+        Label(self.root, text='Sensors:').place(x=260, y=230)
+        self.textSensors = Text(self.root, height=10, width=30)
+        self.textSensors.place(x=260, y=260)
+        for gpio in self.master.listGpio :
+            self.textSensors.insert(END, gpio.name + " (pin " + str(gpio.gpioId) + ")\n")
+        self.textSensors.configure(state='disabled')
+        #Button(self.root, text="Add Sensor", command=lambda: TransitionOrchestration(self.master)).place(x=380, y=230)
    
 
         Button(self.root, text="Read", command=self.getInput).place(x=100, y=400)
@@ -240,12 +311,12 @@ class StateOrchestration():
                 # Adds the FoxDot code to the queue to be sent to all clients.
                 self.master.master.add_to_send_queue(MSG_EVALUATE_STRING(self.master.master.text.marker.id , self.action))
         
-class TransitionOrchestration():
+class SensorGPIO():
     def __init__(self, master):
         self.master = master
         self.root = Toplevel(master.root) # Popup
         self.root.title('Add a transition')
-        self.root.geometry('360x120')
+        self.root.geometry('360x360')
         self.root.grab_set()
         
         # State name
@@ -257,6 +328,15 @@ class TransitionOrchestration():
         Label(self.root, text='Input pin GPIO :').place(x=10, y=50)
         self.spinboxGPIO = Spinbox(self.root, from_=1, to=40)
         self.spinboxGPIO.place(x=160, y=50)
+        
+        # Displays the list of GPIOs already configured
+        Label(self.root, text='GPIO configured:').place(x=10, y=130)
+        self.textStates = Text(self.root, height=10, width=30)
+        self.textStates.place(x=10, y=170)
+        
+        for gpio in self.master.listGpio :
+            self.textStates.insert(END, gpio.name + " (pin " + str(gpio.gpioId) + ")\n")
+        self.textStates.configure(state='disabled')
         
         # Buttons
         btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
@@ -276,11 +356,7 @@ class TransitionOrchestration():
             GPIO.setup(self.gpioId, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             self.currentValue = GPIO.input(self.gpioId)
             
-            self.master.listTransitions.append(self)
-            
-            self.master.textTransitions.configure(state='normal')
-            self.master.textTransitions.insert(END, self.name + " => pin " + str(self.gpioId) + "\n")
-            self.master.textTransitions.configure(state='disabled')
+            self.master.listGpio.append(self)
         
         self.root.destroy()
 
