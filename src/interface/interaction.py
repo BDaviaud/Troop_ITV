@@ -2,9 +2,14 @@ from __future__ import absolute_import
 
 from ..message import *
 import random
-import re
+import re as regex
 from FoxDot import *
 import RPi.GPIO as GPIO
+import time
+import board
+import busio
+import adafruit_mpr121
+import numpy
 
 try:
     from Tkinter import *
@@ -71,7 +76,7 @@ class ConfigGpio():
 """
 Widget for raspberry input.
 """
-
+"""
 class SensorInteraction():
     def __init__(self, master):
         self.master = master
@@ -81,7 +86,7 @@ class SensorInteraction():
         self.root.grab_set() # Prevents interaction with the main window
         
         # List of FoxDoT players        
-        pattern = re.compile(r'(?<=<)\w+')
+        pattern = regex.compile(r'(?<=<)\w+')
         playing = self.master.lang.evaluate2("print('rasp', Clock.playing)")
 
         listPlayers = pattern.findall(playing[0])
@@ -124,10 +129,10 @@ class SensorInteraction():
         btnApply.place(x=270, y=130)
         
     def getInput(self):
-        """ Method called when the 'Apply' button is activated.
-            If a player is selected, the interface inputs are saved
-            and the GPIO input is configured.
-        """
+        #Method called when the 'Apply' button is activated.
+        #If a player is selected, the interface inputs are saved
+        #and the GPIO input is configured.
+        
         self.player_name = self.ComboPlayername.get()
         
         if self.player_name != 'None':
@@ -147,9 +152,9 @@ class SensorInteraction():
         self.root.destroy() # Close the popup
         
     def update(self, channel):
-        """ This method is the callback function called when the value changes on the GPIO input.
-            It updates the value of the player parameter.
-        """
+        #This method is the callback function called when the value changes on the GPIO input.
+        #It updates the value of the player parameter.
+        
         # Ask the FoxDot interpreter the state of the player.
         commande = 'print("rasp", ' + self.player_name + '.isplaying)'
         isplaying = self.master.lang.evaluate2(commande)
@@ -166,7 +171,7 @@ class SensorInteraction():
             # The message is aded to the queue to be sent to the Troop server.
             message_server = MSG_EVALUATE_STRING(self.master.text.marker.id , message)
             self.master.add_to_send_queue(message_server)
-            
+ """           
             
             
         
@@ -360,7 +365,86 @@ class SensorGPIO():
         
         self.root.destroy()
 
+
+"""
+Copie de SensorInteraction pour test capteurs capacitif.
+"""
+class SensorInteraction():
+    def __init__(self, master):
+        self.master = master
+        self.root = Toplevel(master.root) # Popup
+        self.root.title('Sensor and Player Configuration')
+        self.root.geometry('360x170')
+        self.root.grab_set() # Prevents interaction with the main window
         
+        ### Popup interface
+             
+        listAddr = [0x5a, 0x5b, 0x5c]
+                
+        Label(self.root, text='Choose a address :').place(x=10, y=90)
+        self.ComboAddr = ttk.Combobox(self.root, values=listAddr)
+        self.ComboAddr.current(0)
+        self.ComboAddr.place(x=160, y=90)
+        
+        # Buttons
+        btnCancel = Button(self.root, text='Cancel', command=self.root.destroy)
+        btnCancel.place(x=10, y=130)
+
+        btnApply = Button(self.root, text='Apply', command=self.getInput)
+        btnApply.place(x=270, y=130)
+        
+    def getInput(self):
+        """ Method called when the 'Apply' button is activated.
+            If a player is selected, the interface inputs are saved
+            and the GPIO input is configured.
+        """
+                
+        #addr = self.ComboAddr.get()
+                
+        self.lmem = 6
+        self.memo = numpy.array([numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem),numpy.zeros(self.lmem)])
+        
+        print('Instanciation de 1 Adafruit MPR121 Capacitive Touch Sensors')
+        # Create MPR121 object.
+        i2c = busio.I2C(board.SCL, board.SDA)
+        self.mpr121 = adafruit_mpr121.MPR121(i2c,address=0x5a)
+               
+        #GPIO.setmode(GPIO.BOARD)
+        #GPIO.setup(self.gpioId, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+              
+        self.memorize_pins()
+        self.play()
+
+        self.root.destroy() # Close the popup
+        
+    def memorize_pins(self):
+        """ This method is the callback function called when the value changes on the GPIO input.
+            It updates the value of the player parameter.
+        """
+        
+        for j in range(120):
+            # Loop through all 12 inputs (0-11).      
+            for i in range(12):
+                # Call is_touched and pass it then number of the input. If it's touched
+                # it will return True, otherwise it will return False.
+                """
+                #if self.mpr121[i].value:
+                    #print("Input {} touched!".format(i))
+                """
+                #pin_bit = 1 << i
+                if self.mpr121[i].value:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+                    self.memo[i][j%self.lmem]=1
+                else:
+                    self.memo[i][j%self.lmem]=0
+              
+        self.master.root.after(30, self.memorize_pins)
+    
+    def play(self):
+        seuil = 0.1
+        for i in range(12):
+            if (numpy.mean(self.memo[i]) > seuil):
+                print("Input {} touched!".format(i))
+        self.master.root.after(30, self.play)
         
 
 

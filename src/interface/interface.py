@@ -14,7 +14,7 @@ from .bracket import BracketHandler
 from .line_numbers import LineNumbers
 from .menu_bar import MenuBar, PopupMenu
 from .mouse import Mouse
-from .interaction import SensorInteraction, Orchestration, SensorGPIO
+from .interactionCAP import Orchestration
 
 try:
     from Tkinter import *
@@ -1570,18 +1570,6 @@ class Interface(BasicInterface):
         self.logfile.set_marker(self.text.marker)
         self.logfile.recreate()
         return
-
-    # GPIO Configuration  
-    # ==========
-
-    def configure_gpio(self):
-        """ Opens a popup to configure a new entry of the raspberry"""
-        SensorGPIO(self)
-        
-    # Sensor Interaction 
-    # ==========
-    def configure_sensorInteraction(self):
-        SensorInteraction(self)
 
     # Orchestration 
     # ==========

@@ -381,7 +381,7 @@ class FoxDotInterpreter(BuiltinInterpreter):
         """ Sends the string to the FoxDot sub-process and retrieves the response and returns it. """
         # Sends the request
         self.write_stdout(string)
-        
+        #print(string)
         # Retrieves the answer.
         msg = []
         while not msg:
