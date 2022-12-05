@@ -14,7 +14,7 @@ from .bracket import BracketHandler
 from .line_numbers import LineNumbers
 from .menu_bar import MenuBar, PopupMenu
 from .mouse import Mouse
-from .interactionCAP import Orchestration
+from .interaction_interface import IOrchestration, ISensor
 
 try:
     from Tkinter import *
@@ -67,7 +67,9 @@ class BasicInterface:
 
         self._debug_queue = []
         
-        self.listGpio = []
+        self.listOrchestrations = []
+        
+        self.listSensorsConfig = []
 
     def run(self):
         """ Starts the Tkinter loop and exits cleanly if interrupted"""
@@ -1575,4 +1577,7 @@ class Interface(BasicInterface):
     # ==========
 
     def configure_orchestration(self):
-        Orchestration(self)
+        IOrchestration(self)
+
+    def configure_sensors(self):
+        ISensor(self)

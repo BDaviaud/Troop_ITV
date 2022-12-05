@@ -379,17 +379,20 @@ class FoxDotInterpreter(BuiltinInterpreter):
 
     def evaluate2(self, string):
         """ Sends the string to the FoxDot sub-process and retrieves the response and returns it. """
-        # Sends the request
-        self.write_stdout(string)
-        #print(string)
-        # Retrieves the answer.
         msg = []
         while not msg:
-            self.mutex.acquire()  
-            if self.message_rasp:
-                msg = self.message_rasp.pop(0)
-            self.mutex.release()
-            time.sleep(0.02)       
+            # Sends the request
+            self.write_stdout(string)
+            #print(string)
+            # Retrieves the answer.
+            temp = 0
+            while not msg or temp < 5:
+                self.mutex.acquire()  
+                if self.message_rasp:
+                    msg = self.message_rasp.pop(0)
+                self.mutex.release()
+                temp += 1
+                time.sleep(0.02)            
         return msg
                   
         
