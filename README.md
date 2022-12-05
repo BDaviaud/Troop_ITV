@@ -1,9 +1,9 @@
-# TroopRasp
+# Troop_ITV (or Troop Interactive)
 
-Based on [Troop](https://github.com/Qirky/Troop) (v 0.10.3), TroopRasp is an extended tool for Raspberry Pi that enables interaction with sensors in a live coding performance. To use TroopRasp, you need [SuperCollider](https://supercollider.github.io/) and [FoxDot](https://github.com/Qirky/FoxDot) installed on the Raspberry Pi.
+Based on [Troop](https://github.com/Qirky/Troop) (v 0.10.3), Troop Interactive is an extended tool for Raspberry Pi that enables interaction with sensors in a live coding performance. To use Troop Interactive, you need [SuperCollider](https://supercollider.github.io/) and [FoxDot](https://github.com/Qirky/FoxDot) installed on the Raspberry Pi.
 
-In a collaborative live coding performance with Troop, you can add a TroopRasp client installed on a Raspberry Pi (you can add several TroopRasp Client to the session). Through the TroopRasp client, you can link a sensor at a FoxDot player or composed a virtual orchestration that revolves around sensor measurements. 
-The orchestration is composed like finite-states automata, where each transition is a event triggered by a sensor and each state is associated to one or more FoxDot player.
+In a collaborative live coding performance with Troop, you can add a Troop_ITV client installed on a Raspberry Pi (you can add several Troop_ITV Client to the session). Through the Troop_ITV client, you can link a sensor at a FoxDot player or composed a virtual orchestration that revolves around sensor measurements. 
+The orchestration is composed like finite-states automata, where each transition is an event triggered by a sensor and each state is associated to one or more FoxDot player.
 
 ## Getting started
 
@@ -89,24 +89,14 @@ If there is no error, go to the SuperCollider menu Language/Recompile Class Libr
 
 Now you can use FoxDot and SuperCollider for a solo session of live-coding.
 
-### Installing TroopRasp
+### Installing Troop_ITV
 As Troop, you can download the files from this repository as a .zip file and extract the contents to a suitable folder, or, you can clone the repository yourself using:
 
-	$ git clone https://github.com/BDaviaud/TroopRasp.git
+	$ git clone https://github.com/BDaviaud/Troop_ITV.git
 
 
-To run the client you'll need to make sure you're in correct directory: use the 'cd' command followed by the path to where you've extracted TroopRasp. Then execute:
+To run the client you'll need to make sure you're in correct directory: use the 'cd' command followed by the path to where you've extracted Troop_ITV. Then execute:
 
 	$ python3 run-client.py
 
-## Features
-
-The TroopRasp client interface offers two new features compared to the original Troop interface. The first one, called Sensor Interaction, allows to link a GPIO input of the Raspberry Pi to a parameter of a FoxDot player. The second, called Orchestration, offers the possibility to create and play a virtual orchestration, based on the model of a discrete event system. Each of these features is accessible from the menu in the main window via the "Interactive Features" tab.
-
-### Sensor Interaction Example
-To Do
-
-### Orchestration Example
-The implementation of virtual orchestration results in the creation of finite automata, whose states are reached as the sensors are activated.
-To Do
 
